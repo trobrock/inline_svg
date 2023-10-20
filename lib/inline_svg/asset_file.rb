@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InlineSvg
   class AssetFile
     class FileNotFound < IOError; end
@@ -7,7 +9,7 @@ module InlineSvg
       asset_path = FindsAssetPaths.by_filename(filename)
       File.read(asset_path || UNREADABLE_PATH)
     rescue Errno::ENOENT
-      raise FileNotFound.new("Asset not found: #{asset_path}")
+      raise FileNotFound, "Asset not found: #{asset_path}"
     end
   end
 end

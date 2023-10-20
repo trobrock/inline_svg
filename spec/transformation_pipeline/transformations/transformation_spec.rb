@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require 'inline_svg'
 require 'inline_svg/transform_pipeline'
 
 describe InlineSvg::TransformPipeline::Transformations::Transformation do
-  context "#with_svg" do
-    it "returns a Nokogiri::XML::Document representing the parsed document fragment" do
-      document = Nokogiri::XML::Document.parse("<svg>Some document</svg>")
+  context '#with_svg' do
+    it 'returns a Nokogiri::XML::Document representing the parsed document fragment' do
+      document = Nokogiri::XML::Document.parse('<svg>Some document</svg>')
 
       transformation = InlineSvg::TransformPipeline::Transformations::Transformation.new(:irrelevant)
       expect(transformation.with_svg(document).to_html).to eq(
@@ -12,9 +14,9 @@ describe InlineSvg::TransformPipeline::Transformations::Transformation do
       )
     end
 
-    it "yields to the block when the document contains an SVG element" do
-      document = Nokogiri::XML::Document.parse("<svg>Some document</svg>")
-      svg = document.at_css("svg")
+    it 'yields to the block when the document contains an SVG element' do
+      document = Nokogiri::XML::Document.parse('<svg>Some document</svg>')
+      document.at_css('svg')
 
       transformation = InlineSvg::TransformPipeline::Transformations::Transformation.new(:irrelevant)
 
@@ -23,11 +25,11 @@ describe InlineSvg::TransformPipeline::Transformations::Transformation do
         returned_document = transformation.with_svg(document, &b)
       end.to yield_control
 
-      expect(returned_document.to_s).to match(/<svg>Some document<\/svg>/)
+      expect(returned_document.to_s).to match(%r{<svg>Some document</svg>})
     end
 
-    it "does not yield if the document does not contain an SVG element at the root" do
-      document = Nokogiri::XML::Document.parse("<foo>bar</foo><svg>Some document</svg>")
+    it 'does not yield if the document does not contain an SVG element at the root' do
+      document = Nokogiri::XML::Document.parse('<foo>bar</foo><svg>Some document</svg>')
 
       transformation = InlineSvg::TransformPipeline::Transformations::Transformation.new(:irrelevant)
 

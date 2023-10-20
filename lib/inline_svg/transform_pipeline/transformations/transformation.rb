@@ -1,36 +1,42 @@
-module InlineSvg::TransformPipeline::Transformations
-  class Transformation
-    def self.create_with_value(value)
-      self.new(value)
-    end
+# frozen_string_literal: true
 
-    attr_reader :value
+module InlineSvg
+  module TransformPipeline
+    module Transformations
+      class Transformation
+        def self.create_with_value(value)
+          new(value)
+        end
 
-    def initialize(value)
-      @value = value
-    end
+        attr_reader :value
 
-    def transform(*)
-      raise "#transform should be implemented by subclasses of Transformation"
-    end
+        def initialize(value)
+          @value = value
+        end
 
-    # Parses a document and yields the contained SVG nodeset to the given block
-    # if it exists.
-    #
-    # Returns a Nokogiri::XML::Document.
-    def with_svg(doc)
-      doc = Nokogiri::XML::Document.parse(
-        doc.to_html(encoding: "UTF-8"), nil, "UTF-8"
-      )
-      svg = doc.at_css "svg"
-      yield svg if svg && block_given?
-      doc
-    end
-  end
+        def transform(*)
+          raise '#transform should be implemented by subclasses of Transformation'
+        end
 
-  class NullTransformation < Transformation
-    def transform(doc)
-      doc
+        # Parses a document and yields the contained SVG nodeset to the given block
+        # if it exists.
+        #
+        # Returns a Nokogiri::XML::Document.
+        def with_svg(doc)
+          doc = Nokogiri::XML::Document.parse(
+            doc.to_html(encoding: 'UTF-8'), nil, 'UTF-8'
+          )
+          svg = doc.at_css 'svg'
+          yield svg if svg && block_given?
+          doc
+        end
+      end
+
+      class NullTransformation < Transformation
+        def transform(doc)
+          doc
+        end
+      end
     end
   end
 end

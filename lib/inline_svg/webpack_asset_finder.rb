@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InlineSvg
   class WebpackAssetFinder
     def self.find_asset(filename)
@@ -7,7 +9,7 @@ module InlineSvg
     def initialize(filename)
       @filename = filename
       manifest_lookup = Webpacker.manifest.lookup(@filename)
-      @asset_path =  manifest_lookup.present? ? URI(manifest_lookup).path : ""
+      @asset_path = manifest_lookup.present? ? URI(manifest_lookup).path : ''
     end
 
     def pathname
@@ -22,7 +24,7 @@ module InlineSvg
 
     private
 
-    def dev_server_asset(file_path)
+    def dev_server_asset(file_path) # rubocop:disable Metrics/MethodLength
       asset = fetch_from_dev_server(file_path)
 
       begin
