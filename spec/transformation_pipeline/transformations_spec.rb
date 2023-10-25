@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'inline_svg'
 require 'inline_svg/transform_pipeline'
 
@@ -10,8 +12,8 @@ end
 class ASecondCustomTransform < ACustomTransform; end
 
 describe InlineSvg::TransformPipeline::Transformations do
-  context "looking up transformations" do
-    it "returns built-in transformations when parameters are supplied" do
+  context 'looking up transformations' do
+    it 'returns built-in transformations when parameters are supplied' do
       transformations = InlineSvg::TransformPipeline::Transformations.lookup(
         nocomment: 'irrelevant',
         class: 'irrelevant',
@@ -26,32 +28,34 @@ describe InlineSvg::TransformPipeline::Transformations do
         data: 'irrelevant',
         preserve_aspect_ratio: 'irrelevant',
         aria: 'irrelevant',
-        aria_hidden: "true"
+        aria_hidden: 'true'
       )
 
-      expect(transformations.map(&:class)).to match_array([
-        InlineSvg::TransformPipeline::Transformations::NoComment,
-        InlineSvg::TransformPipeline::Transformations::ClassAttribute,
-        InlineSvg::TransformPipeline::Transformations::StyleAttribute,
-        InlineSvg::TransformPipeline::Transformations::Title,
-        InlineSvg::TransformPipeline::Transformations::Description,
-        InlineSvg::TransformPipeline::Transformations::Size,
-        InlineSvg::TransformPipeline::Transformations::Height,
-        InlineSvg::TransformPipeline::Transformations::Width,
-        InlineSvg::TransformPipeline::Transformations::ViewBox,
-        InlineSvg::TransformPipeline::Transformations::IdAttribute,
-        InlineSvg::TransformPipeline::Transformations::DataAttributes,
-        InlineSvg::TransformPipeline::Transformations::PreserveAspectRatio,
-        InlineSvg::TransformPipeline::Transformations::AriaAttributes,
-        InlineSvg::TransformPipeline::Transformations::AriaHiddenAttribute
-      ])
+      expect(transformations.map(&:class)).to match_array(
+        [
+          InlineSvg::TransformPipeline::Transformations::NoComment,
+          InlineSvg::TransformPipeline::Transformations::ClassAttribute,
+          InlineSvg::TransformPipeline::Transformations::StyleAttribute,
+          InlineSvg::TransformPipeline::Transformations::Title,
+          InlineSvg::TransformPipeline::Transformations::Description,
+          InlineSvg::TransformPipeline::Transformations::Size,
+          InlineSvg::TransformPipeline::Transformations::Height,
+          InlineSvg::TransformPipeline::Transformations::Width,
+          InlineSvg::TransformPipeline::Transformations::ViewBox,
+          InlineSvg::TransformPipeline::Transformations::IdAttribute,
+          InlineSvg::TransformPipeline::Transformations::DataAttributes,
+          InlineSvg::TransformPipeline::Transformations::PreserveAspectRatio,
+          InlineSvg::TransformPipeline::Transformations::AriaAttributes,
+          InlineSvg::TransformPipeline::Transformations::AriaHiddenAttribute
+        ]
+      )
     end
 
-    it "returns transformations in priority order" do
+    it 'returns transformations in priority order' do
       built_ins = {
-        desc:   { transform: InlineSvg::TransformPipeline::Transformations::Description, priority: 1 },
-        size:   { transform: InlineSvg::TransformPipeline::Transformations::Size },
-        title:  { transform: InlineSvg::TransformPipeline::Transformations::Title, priority: 2 }
+        desc: { transform: InlineSvg::TransformPipeline::Transformations::Description, priority: 1 },
+        size: { transform: InlineSvg::TransformPipeline::Transformations::Size },
+        title: { transform: InlineSvg::TransformPipeline::Transformations::Title, priority: 2 }
       }
 
       allow(InlineSvg::TransformPipeline::Transformations).to \
@@ -59,21 +63,21 @@ describe InlineSvg::TransformPipeline::Transformations do
 
       transformations = InlineSvg::TransformPipeline::Transformations.lookup(
         {
-          desc: "irrelevant",
-          size: "irrelevant",
-          title: "irrelevant",
+          desc: 'irrelevant',
+          size: 'irrelevant',
+          title: 'irrelevant'
         }
       )
 
       # Use `eq` here because we care about order
       expect(transformations.map(&:class)).to eq([
-        InlineSvg::TransformPipeline::Transformations::Description,
-        InlineSvg::TransformPipeline::Transformations::Title,
-        InlineSvg::TransformPipeline::Transformations::Size,
-      ])
+                                                   InlineSvg::TransformPipeline::Transformations::Description,
+                                                   InlineSvg::TransformPipeline::Transformations::Title,
+                                                   InlineSvg::TransformPipeline::Transformations::Size
+                                                 ])
     end
 
-    it "returns no transformations when asked for an unknown transform" do
+    it 'returns no transformations when asked for an unknown transform' do
       transformations = InlineSvg::TransformPipeline::Transformations.lookup(
         not_a_real_transform: 'irrelevant'
       )
@@ -81,7 +85,7 @@ describe InlineSvg::TransformPipeline::Transformations do
       expect(transformations.map(&:class)).to match_array([])
     end
 
-    it "does not return a transformation when a value is not supplied" do
+    it 'does not return a transformation when a value is not supplied' do
       transformations = InlineSvg::TransformPipeline::Transformations.lookup(
         title: nil
       )
@@ -90,11 +94,12 @@ describe InlineSvg::TransformPipeline::Transformations do
     end
   end
 
-  context "custom transformations" do
+  context 'custom transformations' do
     before(:each) do
       InlineSvg.configure do |config|
-        config.add_custom_transformation({transform: ACustomTransform, attribute: :my_transform, priority: 2})
-        config.add_custom_transformation({transform: ASecondCustomTransform, attribute: :my_other_transform, priority: 1})
+        config.add_custom_transformation({ transform: ACustomTransform, attribute: :my_transform, priority: 2 })
+        config.add_custom_transformation({ transform: ASecondCustomTransform, attribute: :my_other_transform,
+                                           priority: 1 })
       end
     end
 
@@ -102,7 +107,7 @@ describe InlineSvg::TransformPipeline::Transformations do
       InlineSvg.reset_configuration!
     end
 
-    it "returns configured custom transformations" do
+    it 'returns configured custom transformations' do
       transformations = InlineSvg::TransformPipeline::Transformations.lookup(
         my_transform: :irrelevant
       )
@@ -110,7 +115,7 @@ describe InlineSvg::TransformPipeline::Transformations do
       expect(transformations.map(&:class)).to match_array([ACustomTransform])
     end
 
-    it "returns configured custom transformations in priority order" do
+    it 'returns configured custom transformations in priority order' do
       transformations = InlineSvg::TransformPipeline::Transformations.lookup(
         my_transform: :irrelevant,
         my_other_transform: :irrelevant
@@ -120,11 +125,11 @@ describe InlineSvg::TransformPipeline::Transformations do
       expect(transformations.map(&:class)).to eq([ASecondCustomTransform, ACustomTransform])
     end
 
-    it "always prioritizes built-in transforms before custom transforms" do
+    it 'always prioritizes built-in transforms before custom transforms' do
       transformations = InlineSvg::TransformPipeline::Transformations.lookup(
         my_transform: :irrelevant,
         my_other_transform: :irrelevant,
-        desc: "irrelevant"
+        desc: 'irrelevant'
       )
 
       # Use `eq` here because we care about order:
@@ -137,5 +142,4 @@ describe InlineSvg::TransformPipeline::Transformations do
       )
     end
   end
-
 end

@@ -1,15 +1,17 @@
-require "inline_svg/version"
-require "inline_svg/action_view/helpers"
-require "inline_svg/asset_file"
-require "inline_svg/cached_asset_file"
-require "inline_svg/finds_asset_paths"
-require "inline_svg/propshaft_asset_finder"
-require "inline_svg/static_asset_finder"
-require "inline_svg/webpack_asset_finder"
-require "inline_svg/transform_pipeline"
-require "inline_svg/io_resource"
+# frozen_string_literal: true
 
-require "inline_svg/railtie" if defined?(Rails)
+require 'inline_svg/version'
+require 'inline_svg/action_view/helpers'
+require 'inline_svg/asset_file'
+require 'inline_svg/cached_asset_file'
+require 'inline_svg/finds_asset_paths'
+require 'inline_svg/propshaft_asset_finder'
+require 'inline_svg/static_asset_finder'
+require 'inline_svg/webpack_asset_finder'
+require 'inline_svg/transform_pipeline'
+require 'inline_svg/io_resource'
+
+require 'inline_svg/railtie' if defined?(Rails)
 require 'active_support'
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/string'
@@ -29,22 +31,20 @@ module InlineSvg
     end
 
     def asset_file=(custom_asset_file)
-      begin
-        method = custom_asset_file.method(:named)
-        if method.arity == 1
-          @asset_file = custom_asset_file
-        else
-          raise InlineSvg::Configuration::Invalid.new("asset_file should implement the #named method with arity 1")
-        end
-      rescue NameError
-        raise InlineSvg::Configuration::Invalid.new("asset_file should implement the #named method")
+      method = custom_asset_file.method(:named)
+      unless method.arity == 1
+        raise InlineSvg::Configuration::Invalid, 'asset_file should implement the #named method with arity 1'
       end
+
+      @asset_file = custom_asset_file
+    rescue NameError
+      raise InlineSvg::Configuration::Invalid, 'asset_file should implement the #named method'
     end
 
     def asset_finder=(finder)
       @asset_finder = if finder.respond_to?(:find_asset)
                         finder
-                      elsif finder.class.name == "Propshaft::Assembly"
+                      elsif defined?(Propshaft) && finder.instance_of?(Propshaft::Assembly)
                         InlineSvg::PropshaftAssetFinder
                       else
                         # fallback to a naive static asset finder
@@ -56,21 +56,21 @@ module InlineSvg
     end
 
     def svg_not_found_css_class=(css_class)
-      if css_class.present? && css_class.is_a?(String)
-        @svg_not_found_css_class = css_class
-      end
+      return unless css_class.present? && css_class.is_a?(String)
+
+      @svg_not_found_css_class = css_class
     end
 
     def add_custom_transformation(options)
       if incompatible_transformation?(options.fetch(:transform))
-        raise InlineSvg::Configuration::Invalid.new("#{options.fetch(:transform)} should implement the .create_with_value and #transform methods")
+        raise InlineSvg::Configuration::Invalid,
+              "#{options.fetch(:transform)} should implement the .create_with_value and #transform methods"
       end
-      @custom_transformations.merge!(Hash[ *[options.fetch(:attribute, :no_attribute), options] ])
+
+      @custom_transformations.merge!({ options.fetch(:attribute, :no_attribute) => options })
     end
 
-    def raise_on_file_not_found=(value)
-      @raise_on_file_not_found = value
-    end
+    attr_writer :raise_on_file_not_found
 
     def raise_on_file_not_found?
       !!@raise_on_file_not_found
@@ -81,7 +81,6 @@ module InlineSvg
     def incompatible_transformation?(klass)
       !klass.is_a?(Class) || !klass.respond_to?(:create_with_value) || !klass.instance_methods.include?(:transform)
     end
-
   end
 
   @configuration = InlineSvg::Configuration.new
@@ -90,11 +89,9 @@ module InlineSvg
     attr_reader :configuration
 
     def configure
-      if block_given?
-        yield configuration
-      else
-        raise InlineSvg::Configuration::Invalid.new('Please set configuration options with a block')
-      end
+      raise InlineSvg::Configuration::Invalid, 'Please set configuration options with a block' unless block_given?
+
+      yield configuration
     end
 
     def reset_configuration!

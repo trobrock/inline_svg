@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InlineSvg
   class PropshaftAssetFinder
     def self.find_asset(filename)
@@ -10,7 +12,7 @@ module InlineSvg
 
     def pathname
       asset_path = ::Rails.application.assets.load_path.find(@filename)
-      asset_path.path unless asset_path.nil?
+      asset_path&.path
     end
   end
 end

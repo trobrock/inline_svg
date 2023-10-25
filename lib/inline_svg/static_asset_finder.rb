@@ -1,4 +1,6 @@
-require "pathname"
+# frozen_string_literal: true
+
+require 'pathname'
 
 # Naive fallback asset finder for when sprockets >= 3.0 &&
 # config.assets.precompile = false
@@ -16,15 +18,23 @@ module InlineSvg
 
     def pathname
       if ::Rails.application.config.assets.compile
-        asset = ::Rails.application.assets[@filename]
-        Pathname.new(asset.filename) if asset.present?
+        pathname_for_compiled_assets
       else
-        manifest = ::Rails.application.assets_manifest
-        asset_path = manifest.assets[@filename]
-        unless asset_path.nil?
-          ::Rails.root.join(manifest.directory, asset_path)
-        end
+        pathname_for_precompiled_assets
       end
+    end
+
+    private
+
+    def pathname_for_compiled_assets
+      asset = ::Rails.application.assets[@filename]
+      Pathname.new(asset.filename) if asset.present?
+    end
+
+    def pathname_for_precompiled_assets
+      manifest = ::Rails.application.assets_manifest
+      asset_path = manifest.assets[@filename]
+      ::Rails.root.join(manifest.directory, asset_path) unless asset_path.nil?
     end
   end
 end

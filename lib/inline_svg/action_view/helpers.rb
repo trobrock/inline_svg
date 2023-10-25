@@ -1,22 +1,24 @@
+# frozen_string_literal: true
+
 require 'action_view/helpers' if defined?(Rails)
 require 'action_view/context' if defined?(Rails)
 
 module InlineSvg
   module ActionView
     module Helpers
-      def inline_svg_tag(filename, transform_params={})
+      def inline_svg_tag(filename, transform_params = {})
         with_asset_finder(InlineSvg.configuration.asset_finder) do
           render_inline_svg(filename, transform_params)
         end
       end
 
-      def inline_svg_pack_tag(filename, transform_params={})
+      def inline_svg_pack_tag(filename, transform_params = {})
         with_asset_finder(InlineSvg::WebpackAssetFinder) do
           render_inline_svg(filename, transform_params)
         end
       end
 
-      def inline_svg(filename, transform_params={})
+      def inline_svg(filename, transform_params = {})
         render_inline_svg(filename, transform_params)
       end
 
@@ -31,31 +33,33 @@ module InlineSvg
         end
       end
 
-      def render_inline_svg(filename, transform_params={})
+      def render_inline_svg(filename, transform_params = {})
         begin
           svg_file = read_svg(filename)
-        rescue InlineSvg::AssetFile::FileNotFound => error
-          raise error if InlineSvg.configuration.raise_on_file_not_found?
+        rescue InlineSvg::AssetFile::FileNotFound => e
+          raise e if InlineSvg.configuration.raise_on_file_not_found?
           return placeholder(filename) unless transform_params[:fallback].present?
 
-          if transform_params[:fallback].present?
-            begin
-              svg_file = read_svg(transform_params[:fallback])
-            rescue InlineSvg::AssetFile::FileNotFound
-              placeholder(filename)
-            end
-          end
+          svg_file = read_svg_from_fallback(filename, transform_params[:fallback])
         end
 
         InlineSvg::TransformPipeline.generate_html_from(svg_file, transform_params).html_safe
       end
 
       def read_svg(filename)
-        if InlineSvg::IOResource === filename
+        if InlineSvg::IOResource === filename # rubocop:disable Style/CaseEquality
           InlineSvg::IOResource.read filename
         else
           configured_asset_file.named filename
         end
+      end
+
+      def read_svg_from_fallback(filename, fallback)
+        return unless fallback.present?
+
+        read_svg(fallback)
+      rescue InlineSvg::AssetFile::FileNotFound
+        placeholder(filename)
       end
 
       def placeholder(filename)
@@ -63,9 +67,9 @@ module InlineSvg
         not_found_message = "'#{backwards_compatible_html_escape(filename)}' #{extension_hint(filename)}"
 
         if css_class.nil?
-          return "<svg><!-- SVG file not found: #{not_found_message}--></svg>".html_safe
+          "<svg><!-- SVG file not found: #{not_found_message}--></svg>".html_safe
         else
-          return "<svg class='#{css_class}'><!-- SVG file not found: #{not_found_message}--></svg>".html_safe
+          "<svg class='#{css_class}'><!-- SVG file not found: #{not_found_message}--></svg>".html_safe
         end
       end
 
@@ -82,7 +86,7 @@ module InlineSvg
       end
 
       def extension_hint(filename)
-        filename.ends_with?(".svg") ? "" : "(Try adding .svg to your filename) "
+        filename.ends_with?('.svg') ? '' : '(Try adding .svg to your filename) '
       end
     end
   end

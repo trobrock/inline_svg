@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require 'rails/railtie'
 module InlineSvg
   class Railtie < ::Rails::Railtie
-    initializer "inline_svg.action_view" do |app|
+    initializer 'inline_svg.action_view' do |_app|
       ActiveSupport.on_load :action_view do
-        require "inline_svg/action_view/helpers"
+        require 'inline_svg/action_view/helpers'
         include InlineSvg::ActionView::Helpers
       end
     end

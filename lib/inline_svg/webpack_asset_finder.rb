@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InlineSvg
   class WebpackAssetFinder
     def self.find_asset(filename)
@@ -7,7 +9,7 @@ module InlineSvg
     def initialize(filename)
       @filename = filename
       manifest_lookup = Webpacker.manifest.lookup(@filename)
-      @asset_path =  manifest_lookup.present? ? URI(manifest_lookup).path : ""
+      @asset_path = manifest_lookup.present? ? URI(manifest_lookup).path : ''
     end
 
     def pathname
@@ -26,11 +28,9 @@ module InlineSvg
       asset = fetch_from_dev_server(file_path)
 
       begin
-        Tempfile.new(file_path).tap do |file|
-          file.binmode
-          file.write(asset)
-          file.rewind
-        end
+        file_path = File.join(Dir.tmpdir, File.basename(file_path))
+        File.write(file_path, asset, mode: 'wb')
+        file_path
       rescue StandardError => e
         Rails.logger.error "[inline_svg] Error creating tempfile for #{@filename}: #{e}"
         raise

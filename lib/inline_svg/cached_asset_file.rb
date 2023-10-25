@@ -14,7 +14,7 @@ module InlineSvg
     #           Note: Specifying no filters will cache every file found in
     #           paths.
     #
-    def initialize(paths: [], filters: [])
+    def initialize(paths: [], filters: []) # rubocop:disable Metrics/AbcSize
       @paths = Array(paths).compact.map { |p| Pathname.new(p) }
       @filters = Array(filters).map { |f| Regexp.new(f) }
       @assets = @paths.reduce({}) { |assets, p| assets.merge(read_assets(assets, p)) }
@@ -28,10 +28,11 @@ module InlineSvg
     # Returns: A String or raises InlineSvg::AssetFile::FileNotFound error
     def named(asset_name)
       assets[key_for_asset(asset_name)] or
-        raise InlineSvg::AssetFile::FileNotFound.new("Asset not found: #{asset_name}")
+        raise(InlineSvg::AssetFile::FileNotFound, "Asset not found: #{asset_name}")
     end
 
     private
+
     # Internal: Finds the key for a given asset name (using a Regex). In the
     # event of an ambiguous asset_name matching multiple assets, this method
     # ranks the matches by their full file path, choosing the shortest (most
